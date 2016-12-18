@@ -1,3 +1,7 @@
+# Ignore data files (they are large)
+*.feather
+*.csv
+
 # History files
 .Rhistory
 .Rapp.history
