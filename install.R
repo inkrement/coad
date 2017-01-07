@@ -1,0 +1,5 @@
+Sys.setenv(LANG = "en")
+install.packages("devtools")
+install.packages("readr")
+#devtools::install_github("tidyverse/readr")
+install.packages(c("feather", "magrittr", "dplyr"))

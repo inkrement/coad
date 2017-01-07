@@ -1,45 +1,39 @@
-#devtools::install_github("tidyverse/readr")
 library(readr)
 library(feather)
 library(magrittr)
 library(dplyr)
 
-columns <- c("character","character","character","character","character","character","numeric","numeric","numeric","character","character","character","numeric","numeric","character","character","numeric","character","numeric","character","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric","numeric")
+bids <- read_csv('./data/bids.csv', col_types = list(
+    Time_Bid = col_datetime("%Y%m%d%H%M00000"),
+    BidID = col_skip(),
+    X1 = col_skip(),
+    IP = col_skip(),
+    Domain = col_skip(),
+    AdslotID = col_skip(),
+    URL = col_skip()
+))
 
-#bids <- read_csv('./data/bids.csv')
-bids <- read.csv('./data/bids.csv', colClasses=columns, stringsAsFactors = FALSE)
-#write_feather(bids, './bids.feather')
-#bids <- read_feather('./bids.feather')
+## remove unused rows
+##TODO: empty userid?
+cleanedbids <- bids %>% 
+  filter(!is.na(UserID)) %>%  # we need the user id so delete all rows without one
+  filter(!is.na(Time_Bid))  %>%  # same for bid time
+  filter(!is.na(Payingprice)) %>%   # only bids that were displayed to the user
+  arrange(Time_Bid) # order by date
 
-head(bids)
+## TODO: split set depending on advertiser
+cleanedbids %>% filter(AdvertiserID != 2821) %>% select(-AdvertiserID) %>% write_feather('ad_1.feather')
+cleanedbids %>% filter(AdvertiserID != 2259) %>% select(-AdvertiserID) %>% write_feather('ad_2.feather')
 
-toString(Time_Bid[1])
-
-Time_Bid[1]
-
-20131022144300000
-
-as.Date(Time_Bid, format="%d/%m/%Y")
-
-#head(bids)
-#str(bids)
-
-#attach(bids)
-
-without_missing <- bids[!is.na(bids$UserID),]
-without_empty <- without_missing[withoutmissing$UserID != "",]
-
-# just ads that where viewed 
-viewed <- without_empty[!is.na(without_empty$Payingprice),] 
-
-data <- viewed[sample(nrow(viewed), size=200000),]
-
-#n_distinct
-result <- group_by(data, UserID) %>% summarise(
+## TODO: group by
+adv1 <- read_feather('ad_1.feather') %>% group_by(UserID) %>% summarise(
   delivered_ads = n(),
-  conversions = sum(conv)
+  conversions = sum(conv),
+  lag = if (max(conv) == 1) which.max(conv) else NA,
+  
+  Region = names(which.max(table(Region))),
+  City = names(which.max(table(City))),
 )
-
 
 # Analysing how often users should see ads
 
