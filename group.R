@@ -1,19 +1,16 @@
 library(feather)
 
-test <- read_feather('./data/ad_1.feather')
-
 ## group by
 # There are multiple ways to aggregate different strings
 # - select most occuring element: names(which.max(table(Region)))
 # - select latest value: tail(Region, n=1)
 # - or only select if it is always the same and if it is not set it NA
 
-somename <- function (data) {
+groupBids <- function (data) {
   result <- data %>% group_by(UserID) %>% summarise(
     delivered_ads = n(),
     conversion = sum(conv),
-    # lag 0 if not set? NA would not work
-    lag = if (max(conv) == 1) which.max(conv) else 0,
+    lag = if (max(conv) == 1) which.max(conv) else NA,
     
     Browser = tail(Browser, n=1),
     Region = tail(Region, n=1),
@@ -25,13 +22,5 @@ somename <- function (data) {
   return(result)
 }
 
-adv1 <- read_feather('./data/ad_1.feather') %>% somename
-adv2 <- read_feather('./data/ad_2.feather') %>% somename
-
-
-# Analysing how often users should see ads
-adv1_regression <- glm(conversions ~ lag + delivered_ads, data = adv1, family = "binomial"(link="probit"))
-summary(adv1_regression)
-
-adv2_regression <- glm(conversions ~ lag + delivered_ads, data = adv2, family = "binomial"(link="probit"))
-summary(adv2_regression)
+read_feather('./data/ad_1.feather') %>% groupBids %>% write_feather('./data/ad1_grouped.feather')
+read_feather('./data/ad_2.feather') %>% groupBids %>% write_feather('./data/ad2_grouped.feather')
