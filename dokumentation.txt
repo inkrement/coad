@@ -1,0 +1,6 @@
+Wollte jetzt mein COAD-Modell mit log probieren und das sollte ja gar kein Problem machen (t beginnt ja bei 1 zu zählen, daher hab ich ja nicht mal 0). Aber bekomme jetzt die Fehlermeldung:
+
+Error in maxNRCompute(fn = function (theta, fnOrig, gradOrig = NULL, hessOrig = NULL,  : 
+  NA in the initial Hessian
+
+Google hilft nicht wirklich weiter, hast du eine Idee was hier falsch laufen könnte?
